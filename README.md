@@ -1,8 +1,5 @@
 # Grafy i sieci: Generator sieci bezskalowej II (sieć Barabasi-Alberta) w R
 
-![temat](https://upload.wikimedia.org/wikipedia/commons/4/4b/Gr%C3%B6tzsch_graph.svg)
-
-
 ## Opis projektu
 Implementacja zadania projektowego polegającego na stworzeniu generatora sieci Barabasi-Alberta oraz przeprowadzenia na nim serii eksperymentów numerycznych, które mają na celu sprawdzić zgodność implementacji z modelem teoretycznym.
 
