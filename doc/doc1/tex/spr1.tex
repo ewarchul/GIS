@@ -1,2 +1,129 @@
 \documentclass{article}
-\usepackage{asmath}
+\usepackage[utf8]{inputenc}
+\usepackage{amssymb}
+\usepackage{cite}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{amsmath}
+\setcounter{tocdepth}{3}
+\usepackage{graphicx}
+\usepackage{polski}
+\usepackage{amssymb}
+\newcommand*{\QEDA}{\hfill\ensuremath{\blacksquare}}%
+\newcommand*{\QEDB}{\hfill\ensuremath{\square}}%<Paste>
+\usepackage[a4paper]{geometry}
+\usepackage{psfrag}
+\usepackage{bbm}
+\usepackage[T1]{fontenc}
+\usepackage{color}
+\usepackage{url}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=violet,
+    filecolor=magenta,      
+    citecolor=blue,
+    urlcolor=cyan,
+}
+\usepackage{graphicx}
+\graphicspath{{graphics/}}
+\usepackage{float}
+\usepackage{mathtools}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+\DeclareGraphicsExtensions{.eps}
+\DeclareGraphicsExtensions{.ps}
+\usepackage{algorithmic}
+\usepackage{psfrag}
+
+\newcommand{\wek}[1]{
+	{\bf{#1}} 
+}
+\newcommand{\jed}[1]{
+	{$\left[#1\right]$}
+}
+\newcommand{\mat}[1]{
+	{\bf #1} 
+}
+\newcommand{\todo}[1]{
+	\colorbox{yellow} {{\color{red}
+	\emph {TODO: #1}
+}}}
+\newcommand{\srednia}[1]{
+	\langle #1 \rangle 
+}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}} 
+\title{Grafy i sieci: \\ Generator sieci bezskalowej II (model Barabasiego-Albert)}
+%lista i kolejnosc na niej do ustalenia
+\author{Eryk Warchulski \\ Kanstantsin Padmostka \\ Prowadzący: dr inż. Sebastian Kozłowski}%
+\date{\today\\wer. 1.0}
+\begin{document}
+\maketitle
+{\footnotesize{\tableofcontents}}
+\vspace{2cm}
+\begin{abstract}
+	Dokument ten zawiera szczegółowy opis zadania projektowego, który ma potwierdzić zrozumienie tematu przez autorów.
+	Tematem zadania jest implementacja szybkiego i przenośnego generatora
+	sieci bezskalowych w wybranym języku programowania. 
+	W sekcji (\ref{s1}) znajduje się omówienie tematu zadania, a w sekcjach (\ref{s2}) i  
+	(\ref{s3}) ogólny opis grafów losowych oraz opis modelu Barabasiego-Albert. 
+\end{abstract}
+\newpage
+\section{Opis zadania \label{s1}}
+	Postawionym przed nami zadaniem jest zaimplementowanie generatora grafów losowych w ujęciu Barabasieg-Albert, które zostanie szczegółowo
+	opisane w dalszej części dokumentu (\ref{s3}). Generator poza spełnianiem swojej podstawowej funkcji musi charakteryzować się
+	przenośnością oraz jak najmniejszą złożnością obliczeniową i pamięciową. Dla poprawnie działającego generatora kolejnym krokiem w realizacji
+	zadania jest zbadanie rozkładów stopni wierzchołków grafów i porównanie ich z modelami teoretycznymi. Pełna realizacja zadania zakłada istnienie
+	możliwości zapisu wygenerowanego grafu do ustalonego formatu, co pozwoli odwtorzyć sam graf oraz przebieg eksperymentów numerycznych.\\
+	Dokumentacja ta jest wolna od opisu implementacji generatora, eksperymentów numerycznych oraz sposobu ich wizualizacji. Kwestie te zostaną
+	omówione w kolejnych wersjach dokumentacjach, tj. odpowiednio: wersji $2.0$ oraz $3.0$. 
+\section{Grafy losowe \label{s2}}
+	Stosowanie teorii grafów do modelowania zjawisk zachodzących w realnym świecie jest oparte w dużej mierze na grafach losowych. Podyktowane 
+	jest to faktem, że zjawiska te i towarzyszące im zdarzenia wykazują w skali makroskopowej charakter stochastyczny. Przykłady dziedzin, w których stosowane
+	są grafy losowe do modelowania pewnych zjawisk są następujące:
+		\begin{itemize}
+			\item 	sieci połączeń handlowych
+			\item	sieci \texttt{WWW}
+			\item	sieci neuronowe (rekurencyjne)
+			\item	sieci społecznościowe (np. \texttt{Facebook})
+		\end{itemize}
+	Zdefiniowanie grafu losowego wymaga z kolei zdefiniowania struktur jak \textit{przestrzeń grafów losowych} $\mathcal{G}$, która jest
+	wyposażona w unormowaną miarę $\mathbb{P}(\bullet)$ mówiącą o prawdopodobieństwie wylosowania grafu $G$ o pewnych właściwościach \cite{Fronczak1}.
+	\newline
+	Zadanie to ze względu na złożoną strukturę obiektów jakimi są grafy nie jest tak intuicyjne jak określenie przestrzeni probabilistycznej dla
+	zdarzeń, które można reprezentować liczbami. Z tego względu istnieje szereg alternatywnych modeli, które podejmują się rozwiązania tego zadania.
+	Pokrótce zostanie omówiony najstarszy i najprostszy model wprowadzony przez Erdős'a i Rényi'e jeszcze w latach 60. ubiegłego wieku \cite{Erdos1}. 
+\subsection{Model E-R}
+	Model ten jest oparty o dwójkę parametrów $(n, p)$: parametr $n \in \mathbb{N}$ oznacza liczbę wierzchołków generowanego grafu $G$, a $p \in
+	(0, 1)$ stanowi o prawdopodobieństwie zdarzenia polegającego na zaistnieniu krawędz między każdą parą z $n^2$ wierzchołków grafu $G$. \\
+	Na podstawie powyższego łatwo widać, że rozkład stopni wierzchołków w grafie zadany jest przez rozkład dwumianowy z funkcją
+	gęstości prawdopodobieństwa 
+	\begin{equation}
+		p(n,k; p) = \binom{n-1}{k}p^{k}(1-p)^{n-k - 1}
+	\end{equation}
+	implikuje to fakt, że średni stopień wrzechołka $\mathbb{E}deg(v)$ wynosi $(n-1)p$. Ponadto, prawdopodobieństwo wylosowania grafu E-R o $e$ krawędziach i $n$ wierzchołkach wynosi
+	$\binom{\binom{n}{2}}{m}p^{m}(1-p)^{\binom{n}{2} - m}$. Na tej podstawie liczba wszystkich możliwych grafów E-R o $n$ wierzchołkach wynosi
+	\begin{equation}
+		\sum_{e = 0}^{\binom{n}{2}} \binom{\binom{n}{2}}{e} = 2^{\binom{n}{2}}
+	\end{equation}
+	przy czym $\binom{\binom{n}{2}}{e}$ oznacza liczbę $e$-elementowych kombinacji zbioru utworzonego ze wszystkich par zbioru $n$-elementowego. \newline
+	Niestety, model taki nie jest najlepszym kandydatem do \textit{naśladowania} obiektów rzeczywistych. Przy $p << 1$ rozkład stopni wierzchołków dany jest rozkładem Poissona, tj. rozkładem, który stosowany jest do zdarzeń rzadkich występujących w określonym przedziale czasu. Grafy generowane w tym modelu nie są w stanie dobrze odwzorowywać \textit{hub}-ów, tj. skupisk. \newline
+	Modele, które są wolne powyżej opisanych wad grafów opartych o model E-R, oparte są o rozkłady potęgowe i zostaną opisane w następnej sekcji (\ref{s3}).
+\section{Model Barabasiego-Albert \label{s3}}
+	\todo{nawiązanie do poprzedniego rozdziału i napisanie motywacji modeli BA w kontekście zasady maksymalnej entropii}
+\subsection{Sieć bezskalowa}
+	\todo{zdefiniowanie sieci bezskalowej}
+\subsection{Preferencyjne dołączanie wierzchołków}
+	\todo{opisanie na czym polega ten mechanizm}
+\subsection{Rozkład stopni wierzchołków}
+	\todo{wyprowadzenie zależności na rozkład stopni wierzchołków i napisanie, że są różne}
+\subsubsection{Model czasu ciągłego}
+	\todo{wyprowadzenie r.s.w. dla modelu czasu ciągłego}
+\subsubsection{Model równania \textit{master}}
+	\todo{to samo co wyżej}
+\bibliography{spr1}{}
+\bibliographystyle{plain}
+\end{document}
