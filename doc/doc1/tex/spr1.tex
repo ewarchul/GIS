@@ -113,17 +113,53 @@
 	Niestety, model taki nie jest najlepszym kandydatem do \textit{naśladowania} obiektów rzeczywistych. Przy $p << 1$ rozkład stopni wierzchołków dany jest rozkładem Poissona, tj. rozkładem, który stosowany jest do zdarzeń rzadkich występujących w określonym przedziale czasu. Grafy generowane w tym modelu nie są w stanie dobrze odwzorowywać \textit{hub}-ów, tj. skupisk. \newline
 	Modele, które są wolne powyżej opisanych wad grafów opartych o model E-R, oparte są o rozkłady potęgowe i zostaną opisane w następnej sekcji (\ref{s3}).
 \section{Model Barabasiego-Albert \label{s3}}
+	Jak się okazało, do modeli sieci rzeczywistych, np. sieci WWW czy sieci społecznościowych nie bardzo pasuje model E-R. W kontekście sieci WWW(gdzie \textit{połączenie} między węzłami A i B jest zdefiniowane jako umieszczenie hipertextowego linka na stronie A do strony B) wynika to z tego, że autorzy tych stron z większym prawdopodobieństwem umieszczają linki na strony bardziej popularne, niż na te mniej popularne. Czyli, strony popularne stają się jeszcze bardziej popularniejsze, czyli "rich getting richer and poor poorer". Podobne rozumowanie odpowiada siecią społecznościowym czy połączenią handlowym. Odpowiada to tzw. sieciom bezskalowym.\cite{Fronczak2}
 	\todo{nawiązanie do poprzedniego rozdziału i napisanie motywacji modeli BA w kontekście zasady maksymalnej entropii}
 \subsection{Sieć bezskalowa}
-	\todo{zdefiniowanie sieci bezskalowej}
+Siecią bezskalową nazywamy sieć, rozkład liczby połączeń między węzłami jest wykładniczy, czyli spełnia równanie 
+	\begin{equation}
+		P(k) \sim k^{-\gamma}
+	\end{equation}
+gdzie $\gamma$ nazywana jest wartością właściwą grafu i zwykle mieści się w przedziale $ (2,3)$  
+Oznacza to, że w sieci będziemy mieli dużo wierzchołków o małym stopniu i małą(w proporcji) liczbę wierzchołków o dużym stopniu.
 \subsection{Preferencyjne dołączanie wierzchołków}
+Mechanizm preferencyjnego dołączania wierzchołków polega na tym, że nowy wierzchołek z większym prawdopodobieństwem zostanie dołączony do starszego wierzchołka z większym stopniem:
+\begin{equation}
+	P(k_i) = \frac{k_i}{ \sum_{ j = 1 }^{n} k_j }
+\end{equation}
+Jest to tak zwana liniowa reguła preferencyjnego dołączania. W kontekście generatora sieci BA, w kolejnych krokach czasowych $t = 1,2,3$ przy dołączaniu stałej ilości wierzchołków $m$, prawdopodobieństwo będzie wyglądało następująco:
+\begin{equation}
+	P(k_i) = \frac{k_i}{ \sum_{ i = 1 }^{t} k_i } = \frac{k_i} {2mt}
+\end{equation}
+	gdzie m - parametr sieci, 
 	\todo{opisanie na czym polega ten mechanizm}
 \subsection{Rozkład stopni wierzchołków}
+	Celem pracy jest napisanie generatora grafów modelu BA. Jednak napisany generator musi być zweryfikowany, czyli musimy stwierdzić że wygenerowane sieci rzeczywiście należą do modelu BA. Zrobimy to na podstawie weryfikacji rozkładu stopni wierzchołków grafów. Żeby to zrobić jednak musimy wyznaczyć teoretyczny rozkład wierzchołków. Można stosować do tego dwie metody:
 	\todo{wyprowadzenie zależności na rozkład stopni wierzchołków i napisanie, że są różne}
 \subsubsection{Model czasu ciągłego}
-	\todo{wyprowadzenie r.s.w. dla modelu czasu ciągłego}
+	Metoda czasu ciągłego polega na założeniu ciągłości czasu oraz na przyjęciu że stopnie wierzchołków $k_i(t)$ zmieniają się w czasie w sposób ciągły na ułamek stopnia(dlatego w tej metodzie posługujemy się stopniami/rozkładami uśrednionymi).
+
+	Zatem w pojedynczym kroku czasowym, stopień wierzchołka $k$ zmienia się o
+	\begin{equation}
+	\Delta k_i/\Delta t \simeq \partial k_i / \partial t
+	\end{equation}
+		\todo{wyprowadzenie r.s.w. matematyczne dla modelu czasu ciągłego}
+	Wynika z tego, że rozkład stopni wierzchołków ma następującą postać
+	\begin{equation}
+	P(k) = \frac{2m^2}{k^3}
+	\end{equation}
 \subsubsection{Model równania \textit{master}}
-	\todo{to samo co wyżej}
+	Przy wykorzystaniu równania \textit{master} wyznaczamy ścisły rozkład prawdopodobieństwa wierzchołków, dlatego że operujemy na stopniach węzłów a nie średnich stopni węzłów.\\W tej metodzie posługujemy się równaniem mistrza, które opisuję zmianę w czasie ciągłym  stanu układu fizycznego(w naszym przypadku - grafa). Chcemy uzyskać zatem równanie różniczkowe pierwszego rzędu, opisujące zmianę w czasie prawdopodobieństwa $P_i$ znalezienia układu w stanie $i$, przy tym że w każdej chwili czasowej układ może zmienić swój stan $i$ na dowolny $j$: $ i \rightarrow j$. Zakładamy, że tempo takich zmian jest $T_{i \rightarrow j}$:
+	\begin{equation}
+	\frac{dP_i}{dt} = \sum_{j} P_jT_{j \rightarrow i} - \sum_{j} P_iT_{i \rightarrow j}
+	\end{equation}
+	\todo{add math}
+	Rozwiązując równanie rekurencyjne dostajemy rozkład wierzchołków w sieci BA:
+	\begin{equation}
+		P(k) = \frac{2m(m + 1)}{k(k + 1)(k + 2)}
+	\end{equation}
+	przy czym $k \geq m$
+Zauważmy różnicę rozkładów, którą jednak da się wytłumaczyć tym że równanie master jest metodą ścisłą, gdzie przybliżenia wynikały z poszukiwaniem granicznego rozkładu prawdopodobieństwa $P(k)$ dla $t \rightarrow \infty$
 \bibliography{spr1}{}
 \bibliographystyle{plain}
 \end{document}
