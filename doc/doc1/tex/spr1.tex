@@ -144,7 +144,7 @@
 	Modele, które są wolne powyżej opisanych wad grafów opartych o model E-R, oparte są o rozkłady potęgowe i zostaną opisane w następnej sekcji (\ref{s3}).
 \section{Model Barabasiego-Albert \label{s3}}
 	Jak się okazało, do modeli sieci rzeczywistych, np. sieci WWW czy sieci społecznościowych nie bardzo pasuje model E-R. W kontekście sieci WWW(gdzie \textit{połączenie} między węzłami A i B jest zdefiniowane jako umieszczenie hipertextowego linka na stronie A do strony B) wynika to z tego, że autorzy tych stron z większym prawdopodobieństwem umieszczają linki na strony bardziej popularne, niż na te mniej popularne. Czyli, strony popularne stają się jeszcze bardziej popularniejsze, czyli "rich getting richer and poor poorer". Podobne rozumowanie odpowiada siecią społecznościowym czy połączenią handlowym. Odpowiada to tzw. sieciom bezskalowym.\cite{Fronczak2}
-	\todo{nawiązanie do poprzedniego rozdziału i napisanie motywacji modeli BA w kontekście zasady maksymalnej entropii}
+
 \subsection{Sieć bezskalowa}
 Siecią bezskalową nazywamy sieć, rozkład liczby połączeń między węzłami jest wykładniczy, czyli spełnia równanie 
 	\begin{equation}
@@ -161,11 +161,9 @@ Jest to tak zwana liniowa reguła preferencyjnego dołączania. W kontekście ge
 \begin{equation}
 	P(k_i) = \frac{k_i}{ \sum_{ i = 1 }^{t} k_i } = \frac{k_i} {2mt}
 \end{equation}
-	gdzie m - parametr sieci, 
-	\todo{opisanie na czym polega ten mechanizm}
+	gdzie m - parametr sieci, określający ile wierzchołków dołączamy w kolejnej chwili czasowej.
 \subsection{Rozkład stopni wierzchołków}
 	Celem pracy jest napisanie generatora grafów modelu BA. Jednak napisany generator musi być zweryfikowany, czyli musimy stwierdzić że wygenerowane sieci rzeczywiście należą do modelu BA. Zrobimy to na podstawie weryfikacji rozkładu stopni wierzchołków grafów. Żeby to zrobić jednak musimy wyznaczyć teoretyczny rozkład wierzchołków. Można stosować do tego dwie metody:
-	\todo{wyprowadzenie zależności na rozkład stopni wierzchołków i napisanie, że są różne}
 \subsubsection{Model czasu ciągłego}
 	Metoda czasu ciągłego polega na założeniu ciągłości czasu oraz na przyjęciu że stopnie wierzchołków $k_i(t)$ zmieniają się w czasie w sposób ciągły na ułamek stopnia(dlatego w tej metodzie posługujemy się stopniami/rozkładami uśrednionymi).
 
@@ -173,17 +171,56 @@ Jest to tak zwana liniowa reguła preferencyjnego dołączania. W kontekście ge
 	\begin{equation}
 	\Delta k_i/\Delta t \simeq \partial k_i / \partial t
 	\end{equation}
-		\todo{wyprowadzenie r.s.w. matematyczne dla modelu czasu ciągłego}
-	Wynika z tego, że rozkład stopni wierzchołków ma następującą postać
+		W tym modelu w jednech chwili czasowej węzeł może uzyskać więcej niż jedno połączenie. Rozkład prawdopodobieństwa uzyskania $l$ połączeń jest taki sam jak w schemacie Bernoullego:
+		\begin{equation}
+		p(l;m) = \binom{m}{l}P(k_i)^l(1 - P(k_i))^{m -l}
+		\end{equation}
+	Wartość oczekiwana rozkładu $k$ wynosi $np$, a wariancja $\sigma^2 = np(1 - p)$\\ Możemy zatem stwierdzić, że stopień zmiany wierzchołka wynosi
 	\begin{equation}
-	P(k) = \frac{2m^2}{k^3}
+		\frac{\partial k_i}{\partial t} = \sum_{l = 0}^m lp(l; m) = \frac{k_i} {2t}
+	\end{equation}
+	Możemy rozwiązać to równanie różniczkowe, mając warunek początkowy $k_i{t_i} = m$, gdzie $t_i$ - moment czasowy kiedy węzęł $i$ został dodany do sieci. W wyniku otrzymujemy, że 
+	\begin{equation}
+		k_i(t) = m \sqrt{\frac{t}{t_i}}
+	\end{equation}
+	Rozkład stopnia wierzchołków można znaleźć poprzez znalezienie funkcji gęstości :
+	\begin{equation}
+		P(k_i(t) > k) = P(t_i < \frac{mt}{k^2}) = 1 - P(t_i > \frac{mt}{k^2})
+	\end{equation}
+	gdzie $P(t_i) = \frac{1}{m_0 + t}$ Czyli 
+	\begin{equation}
+		P(k_i > k) = 1 - \frac{mt}{k^2}\frac{1}{m_0 + t}
+	\end{equation}
+	Różniczkując $\frac{d}{dk}P(k_i < k)$ dostajemy, że rozkład stopni wierzchołków ma następującą postać:
+	\begin{equation}
+	P(k_i = k) = \frac{2m^2t}{k^3}\frac{1}{m_0 + t} \sim \frac{2m^2}{k^3}
 	\end{equation}
 \subsubsection{Model równania \textit{master}}
 	Przy wykorzystaniu równania \textit{master} wyznaczamy ścisły rozkład prawdopodobieństwa wierzchołków, dlatego że operujemy na stopniach węzłów a nie średnich stopni węzłów.\\W tej metodzie posługujemy się równaniem mistrza, które opisuję zmianę w czasie ciągłym  stanu układu fizycznego(w naszym przypadku - grafa). Chcemy uzyskać zatem równanie różniczkowe pierwszego rzędu, opisujące zmianę w czasie prawdopodobieństwa $P_i$ znalezienia układu w stanie $i$, przy tym że w każdej chwili czasowej układ może zmienić swój stan $i$ na dowolny $j$: $ i \rightarrow j$. Zakładamy, że tempo takich zmian jest $T_{i \rightarrow j}$:
 	\begin{equation}
 	\frac{dP_i}{dt} = \sum_{j} P_jT_{j \rightarrow i} - \sum_{j} P_iT_{i \rightarrow j}
 	\end{equation}
-	\todo{add math}
+	Wyznaczmy zatem $p_i(k, t_i, t)$ jako prawdopodobieństwo że w chwili $t$ węzeł $i$ dodany w chwili $t_i$ ma stopień $k$:
+	\begin{equation}\label{prw}
+		p_i(k, t_i, t + 1) = \sum_{l=0}^m p(l;m)p_i(k - l, t_i, t)		
+	\end{equation}
+	Żeby uzyskać rozkład dla wszystkich wierzchołków musimy zsumować te pw-wa $p_i$. Uzyskujemy 
+	\begin{equation}
+		P(k, t) = \frac{1}{t} \sum_{t_i=1}^t p_i(k,t_i,t).
+	\end{equation}
+	szukając różniczki uzyskujemy że 
+	\begin{equation}
+		p_i(k, t_i, t + 1) = \frac{k - 1}{2t}p(k - 1, t_i, t) + (1 - \frac{k}{2t})p(k,t_i, t).
+	\end{equation}
+	Rozkład wierzchołków można uzyskać 
+	\begin{equation}
+		P(k) = \lim {t \to \infty} P(k, t)
+	\end{equation}
+	Co daje nam równanie rekurencyjne
+	\begin{equation}
+		P(k) = \frac{k - 1}{k - 2}P(k -1)
+	\end{equation}
+	Gdzie warunek początkowy $P(m) = \frac{2}{m + 2}$
 	Rozwiązując równanie rekurencyjne dostajemy rozkład wierzchołków w sieci BA:
 	\begin{equation}
 		P(k) = \frac{2m(m + 1)}{k(k + 1)(k + 2)}
