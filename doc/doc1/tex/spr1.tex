@@ -55,6 +55,35 @@
 \newcommand{\srednia}[1]{
 	\langle #1 \rangle 
 }
+
+
+
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\def\lecturemark{}
+\fancyhf{}
+\fancyhead[L]{\lecturemark}
+\fancyfoot[C]{\thepage}
+
+\newcommand{\spr}[1]{\part{#1}\def\lecturemark{\partname\ \thepart: #1}}
+\renewcommand{\partname}{Sprawozdanie}
+
+% Let's customize \part
+\usepackage{etoolbox}% for \patchcmd
+\renewcommand{\thepart}{\arabic{part}}
+\makeatletter
+\patchcmd{\@part}{\par\nobreak}{: }{}{}
+\patchcmd{\@part}{\huge}{\Large}{}{}
+\makeatother
+
+
+
+
+
+
+
+
 \newcommand{\argmax}{\operatornamewithlimits{argmax}} 
 \title{Grafy i sieci: \\ Generator sieci bezskalowej II (model Barabasiego-Albert)}
 %lista i kolejnosc na niej do ustalenia
@@ -72,6 +101,7 @@
 	(\ref{s3}) ogólny opis grafów losowych oraz opis modelu Barabasiego-Albert. 
 \end{abstract}
 \newpage
+\spr{Opis zadania projektowego}
 \section{Opis zadania \label{s1}}
 	Postawionym przed nami zadaniem jest zaimplementowanie generatora grafów losowych w ujęciu Barabasieg-Albert, które zostanie szczegółowo
 	opisane w dalszej części dokumentu (\ref{s3}). Generator poza spełnianiem swojej podstawowej funkcji musi charakteryzować się
@@ -197,6 +227,8 @@ Jest to tak zwana liniowa reguła preferencyjnego dołączania. W kontekście ge
 	\end{equation}
 	przy czym $k \geq m$
 Zauważmy różnicę rozkładów, którą jednak da się wytłumaczyć tym że równanie master jest metodą ścisłą, gdzie przybliżenia wynikały z poszukiwaniem granicznego rozkładu prawdopodobieństwa $P(k)$ dla $t \rightarrow \infty$
+\spr{Implementacja oraz eksperymenty numeryczne}
+\spr{Wnioski końcowe}
 \bibliography{spr1}{}
 \bibliographystyle{plain}
 \end{document}

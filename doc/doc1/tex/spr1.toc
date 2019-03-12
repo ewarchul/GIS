@@ -1,9 +1,0 @@
-\contentsline {section}{\numberline {1}Opis zadania }{2}{section.1}
-\contentsline {section}{\numberline {2}Grafy losowe }{2}{section.2}
-\contentsline {subsection}{\numberline {2.1}Model E-R}{2}{subsection.2.1}
-\contentsline {section}{\numberline {3}Model Barabasiego-Albert }{3}{section.3}
-\contentsline {subsection}{\numberline {3.1}Sie\IeC {\'c} bezskalowa}{3}{subsection.3.1}
-\contentsline {subsection}{\numberline {3.2}Preferencyjne do\IeC {\l }\IeC {\k a}czanie wierzcho\IeC {\l }k\IeC {\'o}w}{3}{subsection.3.2}
-\contentsline {subsection}{\numberline {3.3}Rozk\IeC {\l }ad stopni wierzcho\IeC {\l }k\IeC {\'o}w}{4}{subsection.3.3}
-\contentsline {subsubsection}{\numberline {3.3.1}Model czasu ci\IeC {\k a}g\IeC {\l }ego}{4}{subsubsection.3.3.1}
-\contentsline {subsubsection}{\numberline {3.3.2}Model r\IeC {\'o}wnania \textit {master}}{4}{subsubsection.3.3.2}
