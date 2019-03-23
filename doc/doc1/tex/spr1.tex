@@ -89,7 +89,7 @@
 \topskip0pt
 \vspace*{\fill}
 \begin{abstract}
-	Dokument ten zawiera szczegółowy opis zadania projektowego, który ma potwierdzić zrozumienie tematu przez autorów i składa się z trzech częsci.\\
+	Dokument ten zawiera szczegółowy opis zadania projektowego, który ma potwierdzić zrozumienie tematu przez autorów i składa się z trzech części.\\
 	Część pierwsza (\ref{part1}) składa się z dwóch sekcji. W sekcjach (\ref{s1}) i (\ref{s2}) znajduje się kolejno: omówienie tematu zadania oraz wskazanie algorytmu, który będzie implementowany. Część ta odpowiada sprawozdaniu numer 1 umieszczonemu w harmonogramie projektu. \\ 
 	Część druga (\ref{part2}) składa się z trzech sekcji. W sekcjach (\ref{s3}) i (\ref{s4}) znajduje się krótki opis teorii grafów, które są
 	tematem tego projektu. Omawiane są kolejno grafy losowe w modelu Erdosa-Renyi oraz -- najbardziej istotne z punktu widzenia projektu -- 
@@ -105,12 +105,12 @@
 \section{Opis zadania \label{s1}}
 	Postawionym przed nami zadaniem jest zaimplementowanie generatora grafów losowych w ujęciu Barabasiego-Albert (BA), które zostanie szczegółowo
 	opisane w dalszej części dokumentu (\ref{s3}). Generator poza spełnianiem swojej podstawowej funkcji musi charakteryzować się
-	przenośnością oraz jak najmniejszą złożnością obliczeniową i pamięciową. Dla poprawnie działającego generatora kolejnym krokiem w realizacji
+	przenośnością oraz jak najmniejszą złożonością obliczeniową i pamięciową. Dla poprawnie działającego generatora kolejnym krokiem w realizacji
 	zadania jest zbadanie rozkładów stopni wierzchołków grafów i porównanie ich z modelami teoretycznymi. Pełna realizacja zadania zakłada istnienie
-	możliwości zapisu wygenerowanego grafu do ustalonego formatu, co pozwoli odwtorzyć sam graf oraz przebieg eksperymentów numerycznych.\\
+	możliwości zapisu wygenerowanego grafu do ustalonego formatu, co pozwoli odtworzyć sam graf oraz przebieg eksperymentów numerycznych.\\
 \section{Implementowany algorytm \label{s2}}
 	W celu zrealizowania projektu zostanie zaimplementowany algorytm generowania grafów w modelu BA z selekcją wierzchołków 
-	opartą o \textit{koło ruletki}. Algorytm ten jest opisany w literaturze przedmiotu jako \texttt{BA-model with simpleRW} \cite{simpleRW}.
+	opartą o zmodyfikowaną regułę \textit{koło ruletki} zwaną ROLL-tree \cite{rolltree} . Algorytm ten jest opisany w literaturze przedmiotu jako \texttt{BA-model with simpleRW} \cite{simpleRW}.
 	Na rysunku (\ref{listing1}). znajduje się pseudokod tego algorytmu:\\
 	\begin{algorithm}[H]
 		\KwData{n, $n_0$, m,  $V = \emptyset$, $E = \emptyset$}
@@ -120,7 +120,7 @@
 		stwórz nowy wierzchołek $v_i$ \\
 		\For{($k = 1$; $m$; $k = k + 1$)}{
 			wylosuj bez zwracania wierzchołek na podstawie $v_l$ ze zbioru $\{v_1, \dots, v_{i-1}\}$ \\
-			na podstawie reguły \textit{koła ruletki} wykonaj: \\
+			na podstawie reguły \textit{ROLL-tree} wykonaj: \\
 				$ E = E \cup \{(v_{l}, v_{i})\}$
 
 			}
@@ -132,7 +132,31 @@
 	wierzchołkami nie wymaga komentarza. Reguła ta jest wyjaśniona w sekcji dotyczącej grafów losowych
 	w modelu BA (\ref{s4}).\\
 	Złożoność obliczeniowa takiej metody wynosi $O(|E|(|V|+1))$. \\
-	Projekt zostanie wykonany w języku \texttt{C++} oraz \texttt{R}. Więcej informacji znajduje się w drugiej cześci dokumentu (\ref{s5}). 
+	\subsection{ROLL-tree}
+	Naiwna reguła losowania - reguła koła ruletki okazuje się być nieoptymalna dla grafa o dużej ilości wierzchołków. W ramach projektu zostanie zaimplementowana metoda losowania \textbf{ROLL-tree}\cite{rolltree}, oparta na "kubełkowaniu" wierzchołków o takim samym stopniu wierzchołków - że wierzchołki o takim samym stopniu mają takie same prawdopodobieństwo wylosowania, czyli możemy ich przechowywać w takiej samej strukturze - kubełku, co jest w istocie podzbiorem wierzchołków. Dla optymalizacji przeszukiwania, kubełki te są umieszczane w wyważonym drzewie binarnym, co z kolej zezwala na losowanie z użyciem reguły "dziel i rządź"\footnote{ang. divide and conquer}. Pełny algorytm takiego losowania w postaci pseudokodu został umieszczony na  rysunku \ref{listing2}\\
+	\begin{algorithm}[H]
+	\KwData{Drzewo ROLL zawierające kubełki ROLL}
+	\KwResult{losowy wierzchołek $v_k$ }
+	$Rnode \leftarrow Tree.root$\\
+	\SetAlgoNoLine
+	\While{Rnode nie jest kubełkiem} {
+		Wylosuj  jednostajnie $r \in [1...(Rnode.w_R + Rnode.w_L)]$\\
+		\SetAlgoNoLine
+		\eIf {$r \leq Rnode.w_L$} {
+			$Rnode \leftarrow Rnode.Lchild$
+		} {
+			$Rnode \leftarrow Rnode.Rchild$
+		}
+	}
+	$B_i \leftarrow bucket(Rnode)$\\
+	$v_k \leftarrow$ wybierz z prawdopodobieństwem jednostajnym element z $B_i$\\
+	\Return $v_k$
+	\label{listing2}
+	\caption{Algorytm losowania z drzewem ROLL}
+	\end{algorithm}
+
+	Projekt zostanie wykonany w języku \texttt{C++} oraz \texttt{R}. Więcej informacji znajduje się w drugiej części dokumentu (\ref{s5}).
+\newpage
 \spr{Implementacja oraz eksperymenty numeryczne \label{part2}}
 \section{Grafy losowe \label{s3}}
 	Stosowanie teorii grafów do modelowania zjawisk zachodzących w realnym świecie jest oparte w dużej mierze na grafach losowych. Podyktowane 
@@ -152,13 +176,13 @@
 	Pokrótce zostanie omówiony najstarszy i najprostszy model wprowadzony przez Erdős'a i Rényi'e jeszcze w latach 60. ubiegłego wieku \cite{Erdos1}. 
 \subsection{Model E-R}
 	Model ten jest oparty o dwójkę parametrów $(n, p)$: parametr $n \in \mathbb{N}$ oznacza liczbę wierzchołków generowanego grafu $G$, a $p \in
-	(0, 1)$ stanowi o prawdopodobieństwie zdarzenia polegającego na zaistnieniu krawędz między każdą parą z $n^2$ wierzchołków grafu $G$. \\
+	(0, 1)$ stanowi o prawdopodobieństwie zdarzenia polegającego na zaistnieniu krawędź między każdą parą z $n^2$ wierzchołków grafu $G$. \\
 	Na podstawie powyższego łatwo widać, że rozkład stopni wierzchołków w grafie zadany jest przez rozkład dwumianowy z funkcją
 	gęstości prawdopodobieństwa 
 	\begin{equation}
 		p(n,k; p) = \binom{n-1}{k}p^{k}(1-p)^{n-k - 1}
 	\end{equation}
-	implikuje to fakt, że średni stopień wrzechołka $\mathbb{E}deg(v)$ wynosi $(n-1)p$. Ponadto, prawdopodobieństwo wylosowania grafu E-R o $e$ krawędziach i $n$ wierzchołkach wynosi
+	implikuje to fakt, że średni stopień wierzchołka $\mathbb{E}deg(v)$ wynosi $(n-1)p$. Ponadto, prawdopodobieństwo wylosowania grafu E-R o $e$ krawędziach i $n$ wierzchołkach wynosi
 	$\binom{\binom{n}{2}}{m}p^{m}(1-p)^{\binom{n}{2} - m}$. Na tej podstawie liczba wszystkich możliwych grafów E-R o $n$ wierzchołkach wynosi
 	\begin{equation}
 		\sum_{e = 0}^{\binom{n}{2}} \binom{\binom{n}{2}}{e} = 2^{\binom{n}{2}}
@@ -193,7 +217,7 @@ Jest to tak zwana liniowa reguła preferencyjnego dołączania. W kontekście ge
 	\begin{equation}
 	\Delta k_i/\Delta t \simeq \partial k_i / \partial t
 	\end{equation}
-		W tym modelu w jednech chwili czasowej węzeł może uzyskać więcej niż jedno połączenie. Rozkład prawdopodobieństwa uzyskania $l$ połączeń jest taki sam jak w schemacie Bernoullego:
+		W tym modelu w jednej chwili czasowej węzeł może uzyskać więcej niż jedno połączenie. Rozkład prawdopodobieństwa uzyskania $l$ połączeń jest taki sam jak w schemacie Bernoullego:
 		\begin{equation}
 		p(l;m) = \binom{m}{l}P(k_i)^l(1 - P(k_i))^{m -l}
 		\end{equation}
@@ -201,7 +225,7 @@ Jest to tak zwana liniowa reguła preferencyjnego dołączania. W kontekście ge
 	\begin{equation}
 		\frac{\partial k_i}{\partial t} = \sum_{l = 0}^m lp(l; m) = \frac{k_i} {2t}
 	\end{equation}
-	Możemy rozwiązać to równanie różniczkowe, mając warunek początkowy $k_i{t_i} = m$, gdzie $t_i$ - moment czasowy kiedy węzęł $i$ został dodany do sieci. W wyniku otrzymujemy, że 
+	Możemy rozwiązać to równanie różniczkowe, mając warunek początkowy $k_i{t_i} = m$, gdzie $t_i$ - moment czasowy kiedy węzeł $i$ został dodany do sieci. W wyniku otrzymujemy, że 
 	\begin{equation}
 		k_i(t) = m \sqrt{\frac{t}{t_i}}
 	\end{equation}
@@ -251,7 +275,7 @@ Jest to tak zwana liniowa reguła preferencyjnego dołączania. W kontekście ge
 Zauważmy różnicę rozkładów, którą jednak da się wytłumaczyć tym że równanie master jest metodą ścisłą, gdzie przybliżenia wynikały z poszukiwaniem granicznego rozkładu prawdopodobieństwa $P(k)$ dla $t \rightarrow \infty$
 \section{Zastosowana technologia oraz stuktury danych \label{s5}}
 \subsection{Technologia}
-	Do stworzeia rozwiązania zostaną użyte dwa języki programowania:
+	Do stworzenia rozwiązania zostaną użyte dwa języki programowania:
 		\begin{itemize}
 			\item C++
 			\item R
@@ -278,16 +302,16 @@ Zauważmy różnicę rozkładów, którą jednak da się wytłumaczyć tym że r
 	W celu porównania zgodności empirycznych rozkładów stopni wierzchołków z rozkładami teoretycznymi
 	zostaną wykonane następujące czynności:
 		\begin{enumerate}
-			\item sprawdzona zotanie hipoteza statystyczna zgodności rozkładów (np. test Kołmogorowa-Smirnowa lub testy oparte na $\mathcal{E}$-statystyce)
+			\item sprawdzona zostanie hipoteza statystyczna zgodności rozkładów (np. test Kołmogorowa-Smirnowa lub testy oparte na $\mathcal{E}$-statystyce)
 			\item policzone i porównane zostanę dywergencje Kullbacka-Leiblera dla rozkładu $P_1$ oraz $P_2$
 				\begin{equation}
 					\Delta(P_1, P_2) = \sum_{i} P_{1}(i)log\frac{P_{1}(i)}{P_{2}(i)}
 				\end{equation}
-			\item zostanie stworzony jądrowy estymator funkcji gęstości prawdopodobieństwa i zwizualizowany na tle teoretycznego rozkładu gęstości prawdopodobieństwa. 
+			\item zostanie stworzony jądrowy estymator funkcji gęstości prawdopodobieństwa i wyświetlony na tle teoretycznego rozkładu gęstości prawdopodobieństwa. 
 		\end{enumerate}
 		Metaparametr eksperymentu $L_{(m, n, n_0)}$, tj. liczbę powtórzeń eksperymentu dla zadanych wartości parametrów modelu BA, na chwilę obecną jest proponowany jako 20.  
 		Metaparametr ten będzie służył do indeksowania wyników eksperymentów numerycznych, które 
-		w zalezności od wykonywanej procedury będą:
+		w zależności od wykonywanej procedury będą:
 		\begin{itemize}
 			\item tabelaryczne (hipotezy statystyczne) 
 			\item graficzne (dywergencje oraz histogramy)
