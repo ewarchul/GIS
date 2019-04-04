@@ -3,6 +3,7 @@
 \usepackage{amssymb}
 \usepackage{cite}
 \usepackage{listings}
+\usepackage{algorithm2e}
 \usepackage{color}
 \usepackage{amsmath}
 \setcounter{tocdepth}{3}
@@ -55,6 +56,27 @@
 \newcommand{\srednia}[1]{
 	\langle #1 \rangle 
 }
+
+
+
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\def\lecturemark{}
+\fancyhf{}
+\fancyhead[L]{\lecturemark}
+\fancyfoot[C]{\thepage}
+
+\newcommand{\spr}[1]{\part{#1}\def\lecturemark{\partname\ \thepart: #1}}
+\renewcommand{\partname}{Sprawozdanie}
+
+% Let's customize \part
+\usepackage{etoolbox}% for \patchcmd
+\renewcommand{\thepart}{\arabic{part}}
+\makeatletter
+\patchcmd{\@part}{\par\nobreak}{: }{}{}
+\patchcmd{\@part}{\huge}{\Large}{}{}
+\makeatother
 \newcommand{\argmax}{\operatornamewithlimits{argmax}} 
 \title{Grafy i sieci: \\ Generator sieci bezskalowej II (model Barabasiego-Albert)}
 %lista i kolejnosc na niej do ustalenia
@@ -63,24 +85,80 @@
 \begin{document}
 \maketitle
 {\footnotesize{\tableofcontents}}
-\vspace{2cm}
-\begin{abstract}
-	Dokument ten zawiera szczegółowy opis zadania projektowego, który ma potwierdzić zrozumienie tematu przez autorów.
-	Tematem zadania jest implementacja szybkiego i przenośnego generatora
-	sieci bezskalowych w wybranym języku programowania. 
-	W sekcji (\ref{s1}) znajduje się omówienie tematu zadania, a w sekcjach (\ref{s2}) i  
-	(\ref{s3}) ogólny opis grafów losowych oraz opis modelu Barabasiego-Albert. 
-\end{abstract}
 \newpage
+\topskip0pt
+\vspace*{\fill}
+\begin{abstract}
+	Dokument ten zawiera szczegółowy opis zadania projektowego, który ma potwierdzić zrozumienie tematu przez autorów i składa się z trzech części.\\
+	Część pierwsza (\ref{part1}) składa się z dwóch sekcji. W sekcjach (\ref{s1}) i (\ref{s2}) znajduje się kolejno: omówienie tematu zadania oraz wskazanie algorytmu, który będzie implementowany. Część ta odpowiada sprawozdaniu numer 1 umieszczonemu w harmonogramie projektu. \\ 
+	Część druga (\ref{part2}) składa się z trzech sekcji. W sekcjach (\ref{s3}) i (\ref{s4}) znajduje się krótki opis teorii grafów, które są
+	tematem tego projektu. Omawiane są kolejno grafy losowe w modelu Erdosa-Renyi oraz -- najbardziej istotne z punktu widzenia projektu -- 
+	grafy losowe w modelu Barabasi-Albert.
+	Sekcja (\ref{s5}) zawiera informacje dotyczące implementacji algorytmu wskazanego w (\ref{s2}). Omówiona jest tam technologia użyta do implementacji
+	szybkiego i przenośnego generatora sieci bezskalowych oraz planowane struktury danych. W sekcji (\ref{s6}) opisane są planowane eksperymenty
+	numeryczne, które będą przeprowadzane w ramach realizacji projektu. \\
+	Część trzecia (\ref{part3}) będzie poświęcona omówieniom wyników eksperymentów numerycznych, jakości implementacji generatora sieci oraz sformułowane zostanę wnioski końcowe\footnote{Ta część dokumentu zostanie uzupełniona w przyszłości, tj. po implementacji oraz przeprowadzaniu eksperymentów.}. 
+\end{abstract}
+\vspace*{\fill}
+\newpage
+\spr{Opis zadania projektowego \label{part1}}
 \section{Opis zadania \label{s1}}
-	Postawionym przed nami zadaniem jest zaimplementowanie generatora grafów losowych w ujęciu Barabasieg-Albert, które zostanie szczegółowo
+	Postawionym przed nami zadaniem jest zaimplementowanie generatora grafów losowych w ujęciu Barabasiego-Albert (BA), które zostanie szczegółowo
 	opisane w dalszej części dokumentu (\ref{s3}). Generator poza spełnianiem swojej podstawowej funkcji musi charakteryzować się
-	przenośnością oraz jak najmniejszą złożnością obliczeniową i pamięciową. Dla poprawnie działającego generatora kolejnym krokiem w realizacji
+	przenośnością oraz jak najmniejszą złożonością obliczeniową i pamięciową. Dla poprawnie działającego generatora kolejnym krokiem w realizacji
 	zadania jest zbadanie rozkładów stopni wierzchołków grafów i porównanie ich z modelami teoretycznymi. Pełna realizacja zadania zakłada istnienie
-	możliwości zapisu wygenerowanego grafu do ustalonego formatu, co pozwoli odwtorzyć sam graf oraz przebieg eksperymentów numerycznych.\\
-	Dokumentacja ta jest wolna od opisu implementacji generatora, eksperymentów numerycznych oraz sposobu ich wizualizacji. Kwestie te zostaną
-	omówione w kolejnych wersjach dokumentacjach, tj. odpowiednio: wersji $2.0$ oraz $3.0$. 
-\section{Grafy losowe \label{s2}}
+	możliwości zapisu wygenerowanego grafu do ustalonego formatu, co pozwoli odtworzyć sam graf oraz przebieg eksperymentów numerycznych.\\
+\section{Implementowany algorytm \label{s2}}
+	W celu zrealizowania projektu zostanie zaimplementowany algorytm generowania grafów w modelu BA z selekcją wierzchołków 
+	opartą o zmodyfikowaną regułę \textit{koło ruletki} zwaną ROLL-tree \cite{rolltree} . Algorytm ten jest opisany w literaturze przedmiotu jako \texttt{BA-model with simpleRW} \cite{simpleRW}.
+	Na rysunku (\ref{listing1}). znajduje się pseudokod tego algorytmu:\\
+	\begin{algorithm}[H]
+		\KwData{n, $n_0$, m,  $V = \emptyset$, $E = \emptyset$}
+		\KwResult{ $\mathcal{G}(V, E)$}
+		dodaj $n_0$ wierzchołków do grafu $\mathcal{G}$ \\
+		\For{($i = n_0 + 1$; $n$; $i = i +1$)}{
+		stwórz nowy wierzchołek $v_i$ \\
+		\For{($k = 1$; $m$; $k = k + 1$)}{
+			wylosuj bez zwracania wierzchołek na podstawie $v_l$ ze zbioru $\{v_1, \dots, v_{i-1}\}$ \\
+			na podstawie reguły \textit{ROLL-tree} wykonaj: \\
+				$ E = E \cup \{(v_{l}, v_{i})\}$
+
+			}
+		}	
+		\label{listing1}
+		\caption{Algorytm generowania sieci BA}
+	\end{algorithm}
+	Pseudokod algorytmu jest opisowy i poza wyjaśnieniem reguły tworzenia krawędzi między
+	wierzchołkami nie wymaga komentarza. Reguła ta jest wyjaśniona w sekcji dotyczącej grafów losowych
+	w modelu BA (\ref{s4}).\\
+	Złożoność obliczeniowa takiej metody wynosi $O(|E|(|V|+1))$. \\
+	\subsection{ROLL-tree}
+	Naiwna reguła losowania - reguła koła ruletki okazuje się być nieoptymalna dla grafa o dużej ilości wierzchołków. W ramach projektu zostanie zaimplementowana metoda losowania \textbf{ROLL-tree}\cite{rolltree}, oparta na "kubełkowaniu" wierzchołków o takim samym stopniu wierzchołków - że wierzchołki o takim samym stopniu mają takie same prawdopodobieństwo wylosowania, czyli możemy ich przechowywać w takiej samej strukturze - kubełku, co jest w istocie podzbiorem wierzchołków. Dla optymalizacji przeszukiwania, kubełki te są umieszczane w wyważonym drzewie binarnym, co z kolej zezwala na losowanie z użyciem reguły "dziel i rządź"\footnote{ang. divide and conquer}. Pełny algorytm takiego losowania w postaci pseudokodu został umieszczony na  rysunku \ref{listing2}\\
+	\begin{algorithm}[H]
+	\KwData{Drzewo ROLL zawierające kubełki ROLL}
+	\KwResult{losowy wierzchołek $v_k$ }
+	$Rnode \leftarrow Tree.root$\\
+	\SetAlgoNoLine
+	\While{Rnode nie jest kubełkiem} {
+		Wylosuj  jednostajnie $r \in [1...(Rnode.w_R + Rnode.w_L)]$\\
+		\SetAlgoNoLine
+		\eIf {$r \leq Rnode.w_L$} {
+			$Rnode \leftarrow Rnode.Lchild$
+		} {
+			$Rnode \leftarrow Rnode.Rchild$
+		}
+	}
+	$B_i \leftarrow bucket(Rnode)$\\
+	$v_k \leftarrow$ wybierz z prawdopodobieństwem jednostajnym element z $B_i$\\
+	\Return $v_k$
+	\label{listing2}
+	\caption{Algorytm losowania z drzewem ROLL}
+	\end{algorithm}
+
+	Projekt zostanie wykonany w języku \texttt{C++} oraz \texttt{R}. Więcej informacji znajduje się w drugiej części dokumentu (\ref{s5}).
+\newpage
+\spr{Implementacja oraz eksperymenty numeryczne \label{part2}}
+\section{Grafy losowe \label{s3}}
 	Stosowanie teorii grafów do modelowania zjawisk zachodzących w realnym świecie jest oparte w dużej mierze na grafach losowych. Podyktowane 
 	jest to faktem, że zjawiska te i towarzyszące im zdarzenia wykazują w skali makroskopowej charakter stochastyczny. Przykłady dziedzin, w których stosowane
 	są grafy losowe do modelowania pewnych zjawisk są następujące:
@@ -98,13 +176,13 @@
 	Pokrótce zostanie omówiony najstarszy i najprostszy model wprowadzony przez Erdős'a i Rényi'e jeszcze w latach 60. ubiegłego wieku \cite{Erdos1}. 
 \subsection{Model E-R}
 	Model ten jest oparty o dwójkę parametrów $(n, p)$: parametr $n \in \mathbb{N}$ oznacza liczbę wierzchołków generowanego grafu $G$, a $p \in
-	(0, 1)$ stanowi o prawdopodobieństwie zdarzenia polegającego na zaistnieniu krawędz między każdą parą z $n^2$ wierzchołków grafu $G$. \\
+	(0, 1)$ stanowi o prawdopodobieństwie zdarzenia polegającego na zaistnieniu krawędź między każdą parą z $n^2$ wierzchołków grafu $G$. \\
 	Na podstawie powyższego łatwo widać, że rozkład stopni wierzchołków w grafie zadany jest przez rozkład dwumianowy z funkcją
 	gęstości prawdopodobieństwa 
 	\begin{equation}
 		p(n,k; p) = \binom{n-1}{k}p^{k}(1-p)^{n-k - 1}
 	\end{equation}
-	implikuje to fakt, że średni stopień wrzechołka $\mathbb{E}deg(v)$ wynosi $(n-1)p$. Ponadto, prawdopodobieństwo wylosowania grafu E-R o $e$ krawędziach i $n$ wierzchołkach wynosi
+	implikuje to fakt, że średni stopień wierzchołka $\mathbb{E}deg(v)$ wynosi $(n-1)p$. Ponadto, prawdopodobieństwo wylosowania grafu E-R o $e$ krawędziach i $n$ wierzchołkach wynosi
 	$\binom{\binom{n}{2}}{m}p^{m}(1-p)^{\binom{n}{2} - m}$. Na tej podstawie liczba wszystkich możliwych grafów E-R o $n$ wierzchołkach wynosi
 	\begin{equation}
 		\sum_{e = 0}^{\binom{n}{2}} \binom{\binom{n}{2}}{e} = 2^{\binom{n}{2}}
@@ -112,18 +190,133 @@
 	przy czym $\binom{\binom{n}{2}}{e}$ oznacza liczbę $e$-elementowych kombinacji zbioru utworzonego ze wszystkich par zbioru $n$-elementowego. \newline
 	Niestety, model taki nie jest najlepszym kandydatem do \textit{naśladowania} obiektów rzeczywistych. Przy $p << 1$ rozkład stopni wierzchołków dany jest rozkładem Poissona, tj. rozkładem, który stosowany jest do zdarzeń rzadkich występujących w określonym przedziale czasu. Grafy generowane w tym modelu nie są w stanie dobrze odwzorowywać \textit{hub}-ów, tj. skupisk. \newline
 	Modele, które są wolne powyżej opisanych wad grafów opartych o model E-R, oparte są o rozkłady potęgowe i zostaną opisane w następnej sekcji (\ref{s3}).
-\section{Model Barabasiego-Albert \label{s3}}
-	\todo{nawiązanie do poprzedniego rozdziału i napisanie motywacji modeli BA w kontekście zasady maksymalnej entropii}
+\section{Model Barabasiego-Albert \label{s4}}
+	Jak się okazało, do modeli sieci rzeczywistych, np. sieci WWW czy sieci społecznościowych nie bardzo pasuje model E-R. W kontekście sieci WWW(gdzie \textit{połączenie} między węzłami A i B jest zdefiniowane jako umieszczenie hipertextowego linka na stronie A do strony B) wynika to z tego, że autorzy tych stron z większym prawdopodobieństwem umieszczają linki na strony bardziej popularne, niż na te mniej popularne. Czyli, strony popularne stają się jeszcze bardziej popularniejsze, czyli "rich getting richer and poor poorer". Podobne rozumowanie odpowiada siecią społecznościowym czy połączenią handlowym. Odpowiada to tzw. sieciom bezskalowym.\cite{Fronczak2}
 \subsection{Sieć bezskalowa}
-	\todo{zdefiniowanie sieci bezskalowej}
+Siecią bezskalową nazywamy sieć, rozkład liczby połączeń między węzłami jest wykładniczy, czyli spełnia równanie 
+	\begin{equation}
+		P(k) \sim k^{-\gamma}
+	\end{equation}
+gdzie $\gamma$ nazywana jest wartością właściwą grafu i zwykle mieści się w przedziale $ (2,3)$  
+Oznacza to, że w sieci będziemy mieli dużo wierzchołków o małym stopniu i małą(w proporcji) liczbę wierzchołków o dużym stopniu.
 \subsection{Preferencyjne dołączanie wierzchołków}
-	\todo{opisanie na czym polega ten mechanizm}
+Mechanizm preferencyjnego dołączania wierzchołków polega na tym, że nowy wierzchołek z większym prawdopodobieństwem zostanie dołączony do starszego wierzchołka z większym stopniem:
+\begin{equation}
+	P(k_i) = \frac{k_i}{ \sum_{ j = 1 }^{n} k_j }
+\end{equation}
+Jest to tak zwana liniowa reguła preferencyjnego dołączania. W kontekście generatora sieci BA, w kolejnych krokach czasowych $t = 1,2,3$ przy dołączaniu stałej ilości wierzchołków $m$, prawdopodobieństwo będzie wyglądało następująco:
+\begin{equation}
+	P(k_i) = \frac{k_i}{ \sum_{ i = 1 }^{t} k_i } = \frac{k_i} {2mt}
+\end{equation}
+	gdzie m - parametr sieci, określający ile wierzchołków dołączamy w kolejnej chwili czasowej.
 \subsection{Rozkład stopni wierzchołków}
-	\todo{wyprowadzenie zależności na rozkład stopni wierzchołków i napisanie, że są różne}
+	Celem pracy jest napisanie generatora grafów modelu BA. Jednak napisany generator musi być zweryfikowany, czyli musimy stwierdzić że wygenerowane sieci rzeczywiście należą do modelu BA. Zrobimy to na podstawie weryfikacji rozkładu stopni wierzchołków grafów. Żeby to zrobić jednak musimy wyznaczyć teoretyczny rozkład wierzchołków. Można stosować do tego dwie metody:
 \subsubsection{Model czasu ciągłego}
-	\todo{wyprowadzenie r.s.w. dla modelu czasu ciągłego}
+	Metoda czasu ciągłego polega na założeniu ciągłości czasu oraz na przyjęciu że stopnie wierzchołków $k_i(t)$ zmieniają się w czasie w sposób ciągły na ułamek stopnia(dlatego w tej metodzie posługujemy się stopniami/rozkładami uśrednionymi).
+	Zatem w pojedynczym kroku czasowym, stopień wierzchołka $k$ zmienia się o
+	\begin{equation}
+	\Delta k_i/\Delta t \simeq \partial k_i / \partial t
+	\end{equation}
+		W tym modelu w jednej chwili czasowej węzeł może uzyskać więcej niż jedno połączenie. Rozkład prawdopodobieństwa uzyskania $l$ połączeń jest taki sam jak w schemacie Bernoullego:
+		\begin{equation}
+		p(l;m) = \binom{m}{l}P(k_i)^l(1 - P(k_i))^{m -l}
+		\end{equation}
+	Wartość oczekiwana rozkładu $k$ wynosi $np$, a wariancja $\sigma^2 = np(1 - p)$\\ Możemy zatem stwierdzić, że stopień zmiany wierzchołka wynosi
+	\begin{equation}
+		\frac{\partial k_i}{\partial t} = \sum_{l = 0}^m lp(l; m) = \frac{k_i} {2t}
+	\end{equation}
+	Możemy rozwiązać to równanie różniczkowe, mając warunek początkowy $k_i{t_i} = m$, gdzie $t_i$ - moment czasowy kiedy węzeł $i$ został dodany do sieci. W wyniku otrzymujemy, że 
+	\begin{equation}
+		k_i(t) = m \sqrt{\frac{t}{t_i}}
+	\end{equation}
+	Rozkład stopnia wierzchołków można znaleźć poprzez znalezienie funkcji gęstości :
+	\begin{equation}
+		P(k_i(t) > k) = P(t_i < \frac{mt}{k^2}) = 1 - P(t_i > \frac{mt}{k^2})
+	\end{equation}
+	gdzie $P(t_i) = \frac{1}{m_0 + t}$ Czyli 
+	\begin{equation}
+		P(k_i > k) = 1 - \frac{mt}{k^2}\frac{1}{m_0 + t}
+	\end{equation}
+	Różniczkując $\frac{d}{dk}P(k_i < k)$ dostajemy, że rozkład stopni wierzchołków ma następującą postać:
+	\begin{equation}
+	P(k_i = k) = \frac{2m^2t}{k^3}\frac{1}{m_0 + t} \sim \frac{2m^2}{k^3}
+	\end{equation}
 \subsubsection{Model równania \textit{master}}
-	\todo{to samo co wyżej}
+	Przy wykorzystaniu równania \textit{master} wyznaczamy ścisły rozkład prawdopodobieństwa wierzchołków, dlatego że operujemy na stopniach węzłów a nie średnich stopni węzłów.\\W tej metodzie posługujemy się równaniem mistrza, które opisuję zmianę w czasie ciągłym  stanu układu fizycznego(w naszym przypadku - grafa). Chcemy uzyskać zatem równanie różniczkowe pierwszego rzędu, opisujące zmianę w czasie prawdopodobieństwa $P_i$ znalezienia układu w stanie $i$, przy tym że w każdej chwili czasowej układ może zmienić swój stan $i$ na dowolny $j$: $ i \rightarrow j$. Zakładamy, że tempo takich zmian jest $T_{i \rightarrow j}$:
+	\begin{equation}
+	\frac{dP_i}{dt} = \sum_{j} P_jT_{j \rightarrow i} - \sum_{j} P_iT_{i \rightarrow j}
+	\end{equation}
+	Wyznaczmy zatem $p_i(k, t_i, t)$ jako prawdopodobieństwo że w chwili $t$ węzeł $i$ dodany w chwili $t_i$ ma stopień $k$:
+	\begin{equation}\label{prw}
+		p_i(k, t_i, t + 1) = \sum_{l=0}^m p(l;m)p_i(k - l, t_i, t)		
+	\end{equation}
+	Żeby uzyskać rozkład dla wszystkich wierzchołków musimy zsumować te pw-wa $p_i$. Uzyskujemy 
+	\begin{equation}
+		P(k, t) = \frac{1}{t} \sum_{t_i=1}^t p_i(k,t_i,t).
+	\end{equation}
+	szukając różniczki uzyskujemy że 
+	\begin{equation}
+		p_i(k, t_i, t + 1) = \frac{k - 1}{2t}p(k - 1, t_i, t) + (1 - \frac{k}{2t})p(k,t_i, t).
+	\end{equation}
+	Rozkład wierzchołków można uzyskać 
+	\begin{equation}
+		P(k) = \lim {t \to \infty} P(k, t)
+	\end{equation}
+	Co daje nam równanie rekurencyjne
+	\begin{equation}
+		P(k) = \frac{k - 1}{k - 2}P(k -1)
+	\end{equation}
+	Gdzie warunek początkowy $P(m) = \frac{2}{m + 2}$
+	Rozwiązując równanie rekurencyjne dostajemy rozkład wierzchołków w sieci BA:
+	\begin{equation}
+		P(k) = \frac{2m(m + 1)}{k(k + 1)(k + 2)}
+	\end{equation}
+	przy czym $k \geq m$
+Zauważmy różnicę rozkładów, którą jednak da się wytłumaczyć tym że równanie master jest metodą ścisłą, gdzie przybliżenia wynikały z poszukiwaniem granicznego rozkładu prawdopodobieństwa $P(k)$ dla $t \rightarrow \infty$
+\section{Zastosowana technologia oraz stuktury danych \label{s5}}
+\subsection{Technologia}
+	Do stworzenia rozwiązania zostaną użyte dwa języki programowania:
+		\begin{itemize}
+			\item C++
+			\item R
+		\end{itemize}
+		W języku C++ przy użyciu biblioteki \texttt{STL} zostanie zaimplementowany generyczny model grafu oraz niezbędne metody pozwalające: 
+		\begin{itemize}
+			\item zainicjować pusty graf w postaci \textbf{listy sąsiedztwa}
+			\item stworzyć wierzchołek
+			\item sprawdzić stopnie wierzchołków
+			\item stworzyć krawędź między wierzchołkami
+			\item dodać krawędź do grafu
+			\item wygenerować graf losowy w modelu BA
+			\item zapisać graf z pamięci programu do formatu z rodziny \texttt{XML}
+		\end{itemize}
+	Język R oraz związany z nim ekosystem \texttt{tidyverse} zostanie użyty do 
+	stworzenia wizualizacji wyników eksperymentów numerycznych. Raport z eksperymentów zostanie
+	przedstawiony w postaci interaktywnego notatnika \texttt{Jupyter notebook}.
+\subsection{Architektura oprogramowania}
+\section{Eskperymenty numeryczne \label{s6}} 
+	Po wygenerowaniu grafu zostanie zbadany rozkład stopni wierzchołków. W związku z tym, że tworzony graf
+	jest losowy dla ustalonych parametrów modelu BA, tj. $(n, n_0, m)$ niezbędne będzie wykonanie
+	serii powtórzonych eksperymentów oraz uśrednienie wyników. Działanie takie pozwoli uzyskać próbę 
+	wiarygodną statystycznie. \\
+	W celu porównania zgodności empirycznych rozkładów stopni wierzchołków z rozkładami teoretycznymi
+	zostaną wykonane następujące czynności:
+		\begin{enumerate}
+			\item sprawdzona zostanie hipoteza statystyczna zgodności rozkładów (np. test Kołmogorowa-Smirnowa lub testy oparte na $\mathcal{E}$-statystyce)
+			\item policzone i porównane zostanę dywergencje Kullbacka-Leiblera dla rozkładu $P_1$ oraz $P_2$
+				\begin{equation}
+					\Delta(P_1, P_2) = \sum_{i} P_{1}(i)log\frac{P_{1}(i)}{P_{2}(i)}
+				\end{equation}
+			\item zostanie stworzony jądrowy estymator funkcji gęstości prawdopodobieństwa i wyświetlony na tle teoretycznego rozkładu gęstości prawdopodobieństwa. 
+		\end{enumerate}
+		Metaparametr eksperymentu $L_{(m, n, n_0)}$, tj. liczbę powtórzeń eksperymentu dla zadanych wartości parametrów modelu BA, na chwilę obecną jest proponowany jako 20.  
+		Metaparametr ten będzie służył do indeksowania wyników eksperymentów numerycznych, które 
+		w zależności od wykonywanej procedury będą:
+		\begin{itemize}
+			\item tabelaryczne (hipotezy statystyczne) 
+			\item graficzne (dywergencje oraz histogramy)
+		\end{itemize}
+\spr{Wnioski końcowe \label{part3}}
 \bibliography{spr1}{}
 \bibliographystyle{plain}
 \end{document}
