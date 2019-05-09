@@ -56,20 +56,14 @@
 \newcommand{\srednia}[1]{
 	\langle #1 \rangle 
 }
-
-
-
 \usepackage{fancyhdr}
-
 \pagestyle{fancy}
 \def\lecturemark{}
 \fancyhf{}
 \fancyhead[L]{\lecturemark}
 \fancyfoot[C]{\thepage}
-
 \newcommand{\spr}[1]{\part{#1}\def\lecturemark{\partname\ \thepart: #1}}
 \renewcommand{\partname}{Sprawozdanie}
-
 % Let's customize \part
 \usepackage{etoolbox}% for \patchcmd
 \renewcommand{\thepart}{\arabic{part}}
@@ -108,54 +102,6 @@
 	przenośnością oraz jak najmniejszą złożonością obliczeniową i pamięciową. Dla poprawnie działającego generatora kolejnym krokiem w realizacji
 	zadania jest zbadanie rozkładów stopni wierzchołków grafów i porównanie ich z modelami teoretycznymi. Pełna realizacja zadania zakłada istnienie
 	możliwości zapisu wygenerowanego grafu do ustalonego formatu, co pozwoli odtworzyć sam graf oraz przebieg eksperymentów numerycznych.\\
-\section{Implementowany algorytm \label{s2}}
-	W celu zrealizowania projektu zostanie zaimplementowany algorytm generowania grafów w modelu BA z selekcją wierzchołków 
-	opartą o zmodyfikowaną regułę \textit{koło ruletki} zwaną ROLL-tree \cite{rolltree} . Algorytm ten jest opisany w literaturze przedmiotu jako \texttt{BA-model with simpleRW} \cite{simpleRW}.
-	Na rysunku (\ref{listing1}). znajduje się pseudokod tego algorytmu:\\
-	\begin{algorithm}[H]
-		\KwData{n, $n_0$, m,  $V = \emptyset$, $E = \emptyset$}
-		\KwResult{ $\mathcal{G}(V, E)$}
-		dodaj $n_0$ wierzchołków do grafu $\mathcal{G}$ \\
-		\For{($i = n_0 + 1$; $n$; $i = i +1$)}{
-		stwórz nowy wierzchołek $v_i$ \\
-		\For{($k = 1$; $m$; $k = k + 1$)}{
-			wylosuj bez zwracania wierzchołek na podstawie $v_l$ ze zbioru $\{v_1, \dots, v_{i-1}\}$ \\
-			na podstawie reguły \textit{ROLL-tree} wykonaj: \\
-				$ E = E \cup \{(v_{l}, v_{i})\}$
-
-			}
-		}	
-		\label{listing1}
-		\caption{Algorytm generowania sieci BA}
-	\end{algorithm}
-	Pseudokod algorytmu jest opisowy i poza wyjaśnieniem reguły tworzenia krawędzi między
-	wierzchołkami nie wymaga komentarza. Reguła ta jest wyjaśniona w sekcji dotyczącej grafów losowych
-	w modelu BA (\ref{s4}).\\
-	Złożoność obliczeniowa takiej metody wynosi $O(|E|(|V|+1))$. \\
-	\subsection{ROLL-tree}
-	Naiwna reguła losowania - reguła koła ruletki okazuje się być nieoptymalna dla grafa o dużej ilości wierzchołków. W ramach projektu zostanie zaimplementowana metoda losowania \textbf{ROLL-tree}\cite{rolltree}, oparta na "kubełkowaniu" wierzchołków o takim samym stopniu wierzchołków - że wierzchołki o takim samym stopniu mają takie same prawdopodobieństwo wylosowania, czyli możemy ich przechowywać w takiej samej strukturze - kubełku, co jest w istocie podzbiorem wierzchołków. Dla optymalizacji przeszukiwania, kubełki te są umieszczane w wyważonym drzewie binarnym, co z kolej zezwala na losowanie z użyciem reguły "dziel i rządź"\footnote{ang. divide and conquer}. Pełny algorytm takiego losowania w postaci pseudokodu został umieszczony na  rysunku \ref{listing2}\\
-	\begin{algorithm}[H]
-	\KwData{Drzewo ROLL zawierające kubełki ROLL}
-	\KwResult{losowy wierzchołek $v_k$ }
-	$Rnode \leftarrow Tree.root$\\
-	\SetAlgoNoLine
-	\While{Rnode nie jest kubełkiem} {
-		Wylosuj  jednostajnie $r \in [1...(Rnode.w_R + Rnode.w_L)]$\\
-		\SetAlgoNoLine
-		\eIf {$r \leq Rnode.w_L$} {
-			$Rnode \leftarrow Rnode.Lchild$
-		} {
-			$Rnode \leftarrow Rnode.Rchild$
-		}
-	}
-	$B_i \leftarrow bucket(Rnode)$\\
-	$v_k \leftarrow$ wybierz z prawdopodobieństwem jednostajnym element z $B_i$\\
-	\Return $v_k$
-	\label{listing2}
-	\caption{Algorytm losowania z drzewem ROLL}
-	\end{algorithm}
-
-	Projekt zostanie wykonany w języku \texttt{C++} oraz \texttt{R}. Więcej informacji znajduje się w drugiej części dokumentu (\ref{s5}).
 \newpage
 \spr{Implementacja oraz eksperymenty numeryczne \label{part2}}
 \section{Grafy losowe \label{s3}}
@@ -273,6 +219,89 @@ Jest to tak zwana liniowa reguła preferencyjnego dołączania. W kontekście ge
 	\end{equation}
 	przy czym $k \geq m$
 Zauważmy różnicę rozkładów, którą jednak da się wytłumaczyć tym że równanie master jest metodą ścisłą, gdzie przybliżenia wynikały z poszukiwaniem granicznego rozkładu prawdopodobieństwa $P(k)$ dla $t \rightarrow \infty$
+\section{Implementowany algorytm \label{s2}}
+	W celu zrealizowania projektu zostanie zaimplementowany algorytm generowania grafów w modelu BA z selekcją wierzchołków 
+	opartą o zmodyfikowaną regułę \textit{koło ruletki} nazywaną w literaturze \texttt{ROLL-tree} \cite{rolltree}. Algorytm ten jest opisany w literaturze przedmiotu jako \texttt{BA-model-ROLL-tree} \cite{simpleRW}.\\
+	Modyfikowana reguła koła ruletki \texttt{ROLL-tree} stanowi o tym, że generator będzie \textbf{szybki}. 
+	Na rysunku (\ref{listing1}). znajduje się pseudokod tego algorytmu:\\
+	\begin{algorithm}[H]
+		\KwData{n, $n_0$, $m$, $V = \emptyset$, $E = \emptyset$}
+		\KwResult{ $\mathcal{G}(V, E)$}
+		dodaj $n_0$ wierzchołków do grafu $\mathcal{G}$ \\
+		\For{($i = n_0 + 1$; $n$; $i = i +1$)}{
+		stwórz nowy wierzchołek $v_i$ \\
+		\For{($k = 1$; $m$; $k = k + 1$)}{
+			wylosuj bez zwracania wierzchołek na podstawie $v_l$ ze zbioru $\{v_1, \dots, v_{i-1}\}$ \\
+			na podstawie reguły \textit{ROLL-tree} wykonaj: \\
+				$ E = E \cup \{(v_{l}, v_{i})\}$
+			}
+		}	
+		\label{listing1}
+		\caption{Algorytm generowania sieci BA}
+	\end{algorithm}
+	Pseudokod algorytmu jest opisowy i poza wyjaśnieniem reguły tworzenia krawędzi między
+	wierzchołkami oraz symbolami nie wymaga większego komentarza. Reguła ta jest wyjaśniona w sekcji dotyczącej grafów losowych
+	w modelu BA (\ref{s4}). \\
+\begin{table}[H]
+	\resizebox{\textwidth}{!}{%
+	\begin{tabular}{c|c}
+		\textbf{Symbol/Procedura} & \textbf{Opis} \\ \hline
+		\multicolumn{1}{|c|}{$n$} & \multicolumn{1}{c|}{Liczba wierzchołków generowanego grafu $G$.} \\ \hline
+		\multicolumn{1}{|c|}{$n_0$} & \multicolumn{1}{c|}{Liczba początkowych wierzchołków generowanego grafu $G$.} \\ \hline
+		\multicolumn{1}{|c|}{$m$} & \multicolumn{1}{c|}{Maksymalna liczba krawędzi.} \\ \hline
+		\multicolumn{1}{|c|}{$V$} & \multicolumn{1}{c|}{Zbiór (początkowo pusty) wierzchołków grafu $G$.} \\ \hline
+		\multicolumn{1}{|c|}{$E$} & \multicolumn{1}{c|}{Zbiór (początkowo pusty) krawędzi grafu $G$.} \\ \hline
+		\multicolumn{1}{|c|}{losowanie wierzchołka} & \multicolumn{1}{c|}{Procedura opisana w (\ref{s2}).} \\ \hline
+	\end{tabular}%
+}
+\end{table}
+	Złożoność obliczeniowa takiej metody wynosi $O(|E|(|V|+1))$. \\
+	\subsection{ROLL-tree}
+	Naiwna reguła losowania -- reguła koła ruletki -- okazuje się być nieoptymalna dla grafów o dużej liczbie wierzchołków.
+	\paragraph{Powód:\\}
+	Zaimplementowanie jej wprost skutkowałoby uzyskaniem generatora sieci, którego szybkość działania byłaby nie do zaakceptowania ze względów złożoności obliczeniowej oraz pamięciowej. Wynika to z faktu, że przy założeniu, że program przechowuje stopnie wierzchołków w liście konieczne byłoby przechodzenie jej sekwencyjnie w całości oraz aktualizowanie stopni wierzchołków po każdym dodanej krawędzi. W pesimistycznym przypadku złożoność takiej procedury jest rzędzu $\mathcal{O}(n^2)$, gdzie $n$ jest liczbą wierzchołków.\\
+	\newline
+	W ramach projektu zostanie zaimplementowana metoda losowania \texttt{ROLL-tree} \cite{rolltree}, oparta o "kubełkowanie" wierzchołków o takim samym stopniu $d_i$.\\ 
+	Kubełekiem stopnia $d$ nazywamy podzbiór wierzchołków $V$ taki, że każdy jego element posiada taki sam stopień wierzchołka równy $d$:
+	\begin{equation}
+		K^{d} = \{v_i \in V | d(v_{i}) = d\}
+	\end{equation}
+	Innymi słowy, wszystkie elementy $K^{d}$ posiadają równe prawdopodobieństwa wylosowania. \\
+	Posortowanie wierzchołków w taki sposób nie jest jednak wystarczające
+	oraz przechowywanie listy kubełków $\mathcal{K}$. Złożoność operacji selekcji wierzchołka maleje z początkowej $\mathcal{O}(n)$ do $\mathcal{O}(|\mathcal{K}|)$, a po procesie selekcji należy przeliczyć jedynie prawdopodobieństwa wylosowania $|\mathcal{K}|$ dostępnych kubełków.
+	Istotnym elementem modyfikacji jest fakt, że
+	kubełki są umieszczane w liściach w drzewa o ograniczonym zrównoważniu (\textit{$w$-BTs} z ang. \textit{weight-balanced binary tree}). Drzewa takie gwarantują \textbf{logarytmiczną} złożoność wszystkich operacji, a zrównoważenie
+	przejawia się w tym, że wielkość, tj. liczbę kluczy, lewego i prawego poddrzewa jest równa co najwyżej $w$.
+	Zezwala to ponadto na losowanie wierzchołków z użyciem reguły "dziel i rządź" \textit{z ang. divide and conquer}, która zostanie wyjaśniona poniżej.\\
+	\paragraph{Reguła losowania z drzewa $w$-BT:\\}
+	Niech dane będzie drzewo $w$-BT \texttt{Tree} z korzeniem \texttt{Tree.root} oraz wierzchołkami \texttt{Rnode}, które posiadają wagi (prawdopodobieństwa selekcji), wskaźniki na lewego i prawego potomka (\texttt{Rnode.RchildL}, \texttt{Rnode.RchildR}). oraz nowowygenerowany wierzchołek $v_i$, którzy należy dołączyć do jednego z pozostałych $|V - {v_i}|$ wierzchołków. Zakłada się również, że wraz z utworzeniem nowego wierzchołka $v_i$ wygenerowany jest ciąg liczb ${a_i}_{i=1}^{m}$ z przedziału $[0, 1]$, gdzie $m$ jest liczbą wszystkich odwiedzonych węzłów drzewa \texttt{Tree}.\\
+	Procedura losowania wierzchołka dołączanego do $v_i$ rozpoczyna się od korzenia drzewa \texttt{Tree.root} i porównania jego wagi $w$ z pierwszą liczbą losową $a_1$. Na podstawie relacji $\leq$ wagi rozpatrywanego wierzchołka wybierany jest lewy lub prawy potomek wierzchołka. Jeśli liczba losowa 
+	$a_1$ jest mniejsza lub równa wagi wierzchołka, to wybierany jest lewy potomek -- w przeciwnym przypadku: prawy potomek. Procedura wywołana jest
+	ponownie na wybranym wierzchołku do momentu osiągnięcia liścia.\\
+	W momencie osiągnięcia liścia wybierany jednostajnie jest jeden z elementów osiągniętego kubełka, tj. wierzchołek, z którym zostanie połączony $v_i$.\\ 
+	Pełny algorytm takiego losowania w postaci pseudokodu został umieszczony na  rysunku (\ref{listing2}\\):\\
+
+	\begin{algorithm}[H]
+	\KwData{Drzewo ROLL zawierające kubełki ROLL}
+	\KwResult{losowy wierzchołek $v_k$ }
+	$Rnode \leftarrow Tree.root$\\
+	\SetAlgoNoLine
+	\While{Rnode nie jest kubełkiem} {
+		Wylosuj  jednostajnie $a \in [1...(Rnode.w_R + Rnode.w_L)]$\\
+		\SetAlgoNoLine
+		\eIf {$r \leq Rnode.w_L$} {
+			$Rnode \leftarrow Rnode.Lchild$
+		} {
+			$Rnode \leftarrow Rnode.Rchild$
+		}
+	}
+	$B_i \leftarrow bucket(Rnode)$\\
+	$v_k \leftarrow$ wybierz z prawdopodobieństwem jednostajnym element z $K_i$\\
+	\Return $v_k$
+	\label{listing2}
+	\caption{Algorytm losowania z drzewem ROLL}
+	\end{algorithm}
+	Projekt zostanie wykonany w języku \texttt{C++} oraz \texttt{R}. Więcej informacji znajduje się w drugiej części dokumentu (\ref{s5}).
 \section{Zastosowana technologia oraz stuktury danych \label{s5}}
 \subsection{Technologia}
 	Do stworzenia rozwiązania zostaną użyte dwa języki programowania:
@@ -293,7 +322,6 @@ Zauważmy różnicę rozkładów, którą jednak da się wytłumaczyć tym że r
 	Język R oraz związany z nim ekosystem \texttt{tidyverse} zostanie użyty do 
 	stworzenia wizualizacji wyników eksperymentów numerycznych. Raport z eksperymentów zostanie
 	przedstawiony w postaci interaktywnego notatnika \texttt{Jupyter notebook}.
-\subsection{Architektura oprogramowania}
 \section{Eskperymenty numeryczne \label{s6}} 
 	Po wygenerowaniu grafu zostanie zbadany rozkład stopni wierzchołków. W związku z tym, że tworzony graf
 	jest losowy dla ustalonych parametrów modelu BA, tj. $(n, n_0, m)$ niezbędne będzie wykonanie
