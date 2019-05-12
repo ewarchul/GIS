@@ -5,24 +5,23 @@
 #include <map>
 #include <algorithm>
 #include <cassert>
-#include "vertex.h"
-#include "graph.h"
-Graph::Graph() : vertexList{}, edgesList{} {}
-bool Graph::addVertex(Vertex v){
+#include "graph/NodeImpOur.h"
+#include "graph/GraphImpOur.h"
+
+GraphImpOur::GraphImpOur() : vertexList{}, edgesList{} {}
+
+bool GraphImpOur::addVertex(Vertex v){
 	std::size_t org_size{this->vertexList.size()};
 	this->vertexList.push_back(v);
-	if(this->vertexList.size() == org_size + 1)
-		return true;
-	else
-		return false;
+	return this->vertexList.size() == org_size + 1;
 }
-bool Graph::isVertex(Vertex &v){
+bool GraphImpOur::isVertex(Vertex &v){
 	if(std::find(this->vertexList.begin(), this->vertexList.end(), v) != this->vertexList.end()){
 		return true;
 	}
 	return false;
 }
-bool Graph::addEdge(Vertex &v, Vertex &u){
+bool GraphImpOur::addEdge(Vertex &v, Vertex &u){
 	if(this->isVertex(v) && this->isVertex(u)){
 		if(!v.adjNodes.count(u.label)){
 			v.adjNodes.insert(u.label);
@@ -35,17 +34,17 @@ bool Graph::addEdge(Vertex &v, Vertex &u){
 		return true;
 	}
 	else{
-		std::cout<<"Missing vertex in graph: v = "<<this->isVertex(v)<<"\t u = "<<this->isVertex(u)<<".\n";
+		std::cout<<"Missing vertex in GraphImpOur: v = "<<this->isVertex(v)<<"\t u = "<<this->isVertex(u)<<".\n";
 		return false;
 	}
 }
-void Graph::vertexEdges(Vertex const &v){
+void GraphImpOur::vertexEdges(Vertex const &v){
 	std::cout<<"Vertex "<<v.label<<" has edges with nodes: [ ";
 	for(auto i: v.adjNodes)
 		std::cout<<i<<" ";
 	std::cout<<"]\n";
 }
-void Graph::graphInfo(){
+void GraphImpOur::graphInfo(){
 	for(auto i=this->edgesList.begin(); i != this->edgesList.end(); i++){
 		std::cout<<"Vertex ";
 		std::cout<<i->first<<" has edges with nodes [ ";
@@ -54,7 +53,8 @@ void Graph::graphInfo(){
 		std::cout<<"] and has degree "<<i->second.size()<<".\n";
 	}
 }
-std::ostream &operator<<(std::ostream &output, Graph &G){
+
+std::ostream &operator<<(std::ostream &output, GraphImpOur &G){
 	for(auto i=G.edgesList.begin(); i != G.edgesList.end(); i++){
 		for(auto k: i->second){
 			output<<i->first-1<<" ";
@@ -62,4 +62,18 @@ std::ostream &operator<<(std::ostream &output, Graph &G){
 		}
 	}
 	return output;
+}
+
+SNode GraphImpOur::addNode() {
+	auto vertex = std::make_shared<Vertex>();
+	this->addVertex(*vertex);
+	return vertex;
+}
+
+void GraphImpOur::addArc(SNode &node, SNode &sNode) {
+	this->addEdge(*static_cast<Vertex*>(node.get()), *static_cast<Vertex*>(sNode.get()));
+}
+
+SNode GraphImpOur::getNode(int id) const {
+	return SNode();
 }

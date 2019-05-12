@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include <set>
-#include "vertex.h"
+#include "graph/NodeImpOur.h"
 int Vertex::vertexId;
 Vertex::Vertex(){
 	vertexId++;
@@ -19,7 +19,7 @@ void Vertex::degInc(int incval){
 void Vertex::degDec(int decval){
 	this->vertexDeg = this->vertexDeg - decval;
 }
-bool operator==(const Vertex &lhs, const Vertex &rhs){
+/*bool operator==(const Vertex &lhs, const Vertex &rhs){
 	if(lhs.label == rhs.label)
 		return true;
 	else
@@ -30,4 +30,9 @@ bool operator!=(const Vertex &lhs, const Vertex &rhs){
 		return true;
 	else
 		return false;
+}*/
+
+bool Vertex::operator==(const Node &node) {
+	const Vertex* o = dynamic_cast<const Vertex*>(&node);
+	return this->label == o->label;
 }

@@ -1,0 +1,59 @@
+//
+// Created by Konstantin on 16.04.2019.
+//
+#include "generator/BAModel.h"
+#include <iostream>
+Graph* BAModel::generateBAGraph(const int N, const int m, const int m0) {
+    initModel(m0);
+
+    generateGraph(N, m, m0);
+
+    return g.get();
+}
+
+void BAModel::connectNode(SNode &d, std::set<SNode> &blackList) {
+    bool isSelected = false;
+    while(!isSelected) {
+        // select vertext based on roulette
+        SNode s = roulette->selectNode();
+        if(blackList.find(s) == blackList.end()) { // what if an infinite loop? replace with for?
+            g->addArc(s, d);
+            blackList.insert(s);
+            roulette->confirmSelection();
+            isSelected = true;
+        }
+    }
+
+}
+
+void BAModel::initModel(int m0) {
+    // TODo zero graph, return one
+    std::vector<SNode> createdNodes;
+    for(int i = 0; i < m0; ++i) {
+        SNode&& n = g->addNode();
+        std::for_each(createdNodes.begin(), createdNodes.end(), [&](SNode&  x) {
+            g->addArc(n, x);
+        });
+        createdNodes.push_back(n);
+    }
+    // update pref attachement buckets
+            std::cout << "here at 1";
+    std::for_each(createdNodes.begin(), createdNodes.end(), [&](SNode& x) {
+        roulette->insertNode(x, m0);
+    });
+}
+
+void BAModel::generateGraph(const int N, const int m, const int m0) {
+    for(int i = m0 + 1; i < N; i++) {
+        // create node
+        SNode&& n = g->addNode();
+        //connect to m nodes
+        std::set<SNode> connectedNodes;
+        for(int j = 0; j < m; j++) {
+            connectNode(n, connectedNodes);
+        }
+        // add node to corresponding bucket
+		roulette->insertNode(n, m);
+    }
+	std::cout << "generated";
+}
