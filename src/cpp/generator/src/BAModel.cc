@@ -37,7 +37,6 @@ void BAModel::initModel(int m0) {
         createdNodes.push_back(n);
     }
     // update pref attachement buckets
-            std::cout << "here at 1";
     std::for_each(createdNodes.begin(), createdNodes.end(), [&](SNode& x) {
         roulette->insertNode(x, m0);
     });
@@ -54,8 +53,6 @@ void BAModel::generateGraph(const int N, const int m, const int m0) {
         }
         // add node to corresponding bucket
 		roulette->insertNode(n, m);
-		if (i % 30000 == 0)
-			std::cout << "is " << i << std::endl;
+
     }
-	std::cout << "generated";
 }
