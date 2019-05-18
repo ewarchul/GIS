@@ -13,7 +13,6 @@ class Graph {
 public:
     virtual SNode addNode() = 0;
     virtual void addArc(SNode&, SNode&) = 0;
-    virtual SNode getNode(int id) const = 0;
 };
 
 

@@ -16,7 +16,7 @@ public:
 	//friend bool operator!=(const Vertex &lhs, const Vertex &rhs);
 	Vertex();
 
-    bool operator==(const Node &node) override;
+	inline long getLabel() const override { return label; }
 };
 
 #endif

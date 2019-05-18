@@ -9,7 +9,8 @@
 
 class Node {
 public:
-    inline virtual bool operator ==(const Node&) = 0;
+	inline virtual long getLabel() const = 0;
+	inline virtual bool operator ==(const Node& other) { return this->getLabel() == other.getLabel();  }
     bool operator !=(const Node& r) { return !(*this == r);}
 };
 

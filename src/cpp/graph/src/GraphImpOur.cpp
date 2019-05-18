@@ -21,23 +21,20 @@ bool GraphImpOur::isVertex(Vertex &v){
 	}
 	return false;
 }
-bool GraphImpOur::addEdge(Vertex &v, Vertex &u){
-	if(this->isVertex(v) && this->isVertex(u)){
-		if(!v.adjNodes.count(u.label)){
-			v.adjNodes.insert(u.label);
-			u.adjNodes.insert(v.label);
-		}
-		v.degInc(1);
-		u.degInc(1);
-		this->edgesList[v.label]=v.adjNodes;
-		this->edgesList[u.label]=u.adjNodes;
-		return true;
+
+
+bool GraphImpOur::addEdge(Vertex &v, Vertex &u) { // todo consider uncheck node
+	if(!v.adjNodes.count(u.label)){
+		v.adjNodes.insert(u.label);
+		u.adjNodes.insert(v.label);
 	}
-	else{
-		std::cout<<"Missing vertex in GraphImpOur: v = "<<this->isVertex(v)<<"\t u = "<<this->isVertex(u)<<".\n";
-		return false;
-	}
+	v.degInc(1);
+	u.degInc(1);
+	this->edgesList[v.label]=v.adjNodes;
+	this->edgesList[u.label]=u.adjNodes;
+	return true;
 }
+
 void GraphImpOur::vertexEdges(Vertex const &v){
 	std::cout<<"Vertex "<<v.label<<" has edges with nodes: [ ";
 	for(auto i: v.adjNodes)
@@ -74,6 +71,3 @@ void GraphImpOur::addArc(SNode &node, SNode &sNode) {
 	this->addEdge(*static_cast<Vertex*>(node.get()), *static_cast<Vertex*>(sNode.get()));
 }
 
-SNode GraphImpOur::getNode(int id) const {
-	return SNode();
-}

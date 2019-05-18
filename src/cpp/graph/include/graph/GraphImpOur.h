@@ -25,8 +25,6 @@ public:
 	SNode addNode() override;
 
 	void addArc(SNode &node, SNode &sNode) override;
-
-	SNode getNode(int id) const override;
 };
 
 #endif

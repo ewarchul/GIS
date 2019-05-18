@@ -32,7 +32,3 @@ bool operator!=(const Vertex &lhs, const Vertex &rhs){
 		return false;
 }*/
 
-bool Vertex::operator==(const Node &node) {
-	const Vertex* o = dynamic_cast<const Vertex*>(&node);
-	return this->label == o->label;
-}

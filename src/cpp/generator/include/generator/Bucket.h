@@ -6,6 +6,7 @@
 #define BAGENERATOR_BUCKET_H
 
 #include <vector>
+#include <map>
 #include <algorithm>
 #include "graph/Node.h"
 #include "Random.h"
@@ -13,8 +14,8 @@
 
 class Bucket { // todo consider abstract
 private:
-    std::vector<SNode> nodes; // todo consider set
-    std::vector<SNode>::const_iterator findNode(SNode& node) const;
+    std::map<long, SNode> nodes; // todo consider set
+   // std::vector<SNode>::const_iterator findNode(SNode& node) const;
 public:
     const int bucketDegree;
     bool addNode(SNode &n);
