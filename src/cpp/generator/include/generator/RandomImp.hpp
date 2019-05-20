@@ -11,7 +11,7 @@ class RandomImp : public Random {
 private:
     std::default_random_engine generator;
 public:
-    // TODO probably slow try recr
+    // uniformly generate value
     unsigned long getLong(unsigned long bound, unsigned long lower = 0) override {
         std::uniform_int_distribution<unsigned long> dist(lower, bound - 1);
         return dist(generator);

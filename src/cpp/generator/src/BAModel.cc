@@ -26,8 +26,7 @@ void BAModel::connectNode(SNode &d, std::set<SNode> &blackList) {
 
 }
 
-void BAModel::initModel(int m0) {
-    // TODo zero graph, return one
+void BAModel::initModel(int m0) { // initialize graph
     std::vector<SNode> createdNodes;
     for(int i = 0; i < m0; ++i) {
         SNode&& n = g->addNode();
@@ -43,15 +42,15 @@ void BAModel::initModel(int m0) {
 }
 
 void BAModel::generateGraph(const int N, const int m, const int m0) {
-    for(int i = m0 + 1; i < N; i++) {
+    for(int i = m0 + 1; i <= N; i++) {
         // create node
         SNode&& n = g->addNode();
         //connect to m nodes
-        std::set<SNode> connectedNodes;
+        std::set<SNode> connectedNodes; // already connected nodes, can't connect twice the same node
         for(int j = 0; j < m; j++) {
             connectNode(n, connectedNodes);
         }
-        // add node to corresponding bucket
+        // add new node to corresponding bucket
 		roulette->insertNode(n, m);
 
     }
