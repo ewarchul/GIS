@@ -27,6 +27,7 @@ bool validate_args(int n, int m, int m0) {
 		&& m > 0
 		&& m0 > 0
 		&& n > m0
+		&& m <= m0
 		&& n > m0 + m;
 }
 
@@ -64,9 +65,10 @@ int main(int argc, char** argv)
 	// parse input arguments
 	try {
 		auto arguments = parseCommandlineArgsOrExit(argc, argv);
+		//auto arguments = std::make_tuple(6000, 5, 5, )
 		std::cout << "Generating graph..." << std::endl;
-		std::cout << "Saving graph..." << std::endl;
 		Graph* g = m.generateBAGraph(std::get<0>(arguments), std::get<1>(arguments), std::get<2>(arguments));
+		std::cout << "Saving graph..." << std::endl;
 		streamGraph(dynamic_cast<GraphImpOur*>(g), std::get<3>(arguments));
 	}
 	catch (const std::invalid_argument& e) {

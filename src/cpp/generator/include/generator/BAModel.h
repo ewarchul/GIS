@@ -11,17 +11,17 @@
 #include <set>
 class BAModel {
     std::shared_ptr<Graph> g;
-    std::unique_ptr<PreferentialAttachement> roulette;
+	// roulette where we pick a node to connect
+	std::unique_ptr<PreferentialAttachement> roulette;
 
-    inline void initModel(int m0);
-    inline void generateGraph(int N, int m, int m0);
-    inline void connectNode(SNode &d, std::set<SNode> &);
+    inline void initModel(int m0); // initializing graph
+    inline void generateGraph(int N, int m, int m0); // generating BA graph
+    inline void connectNode(SNode &d, std::set<SNode> &); // connecting a single node
+
 public:
-    Graph* generateBAGraph(int N, int m, int m0);
-    BAModel() {
-        g = std::make_shared<GraphImpOur>();
-        roulette = std::unique_ptr<PreferentialAttachement>(new RollTree);
-    }
+
+    Graph* generateBAGraph(int N, int m, int m0); 
+    BAModel() : g(std::make_shared<GraphImpOur>()), roulette(std::unique_ptr<PreferentialAttachement>(new RollTree)) {}
 };
 
 #endif //BAGENERATOR_BAMODEL_H

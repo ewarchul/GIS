@@ -10,8 +10,11 @@
 
 class PreferentialAttachement {
 public:
-    virtual SNode selectNode() const = 0;
+	// select node from wheel
+    virtual SNode selectNode() const = 0; 
+	// confirm that selected node is valid
     virtual void confirmSelection() = 0;
+	// insert new node to the wheel
     virtual void insertNode(SNode&, int degree) = 0;
 };
 
